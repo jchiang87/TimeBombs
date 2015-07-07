@@ -16,7 +16,8 @@ class FermiLightCurveData(object):
         self.tmid = mjd((self.data.field('START') + self.data.field('STOP'))/2.)
     def _column_values(self, colname):
         return set(self.data.field(colname))
-    def light_curve(self, source_name, eband='100_300000', duration=86400.):
+    def light_curve(self, source_name, eband='100_300000', duration=86400.,
+                    filter_uls=False):
         if ((eband not in self.ebands) or 
             (duration not in self.durations) or
             (source_name not in self.sources)):
@@ -24,7 +25,11 @@ class FermiLightCurveData(object):
         flux = self.data.field('FLUX_%s' % eband)
         error = self.data.field('ERROR_%s' % eband)
         ul = self.data.field('UL_%s' % eband)
-        index = np.where(self.data.field('NAME') == source_name)
+        if filter_uls:
+            index = np.where((self.data.field('NAME') == source_name) & 
+                             (ul == False))
+        else:
+            index = np.where(self.data.field('NAME') == source_name)
         return self.tmid[index], flux[index], error[index], ul[index]
 
 if __name__ == '__main__':
@@ -33,13 +38,23 @@ if __name__ == '__main__':
 
     lcdata = FermiLightCurveData('gll_asp_0457833600_v00.fit')
 
-    t, f, df, ul = lcdata.light_curve('3C 454.3')
-    plot.xyplot(t, f, df, yrange=(0, 1.1*max(f)))
+    source = '3C 454.3'
+    t, f, df, ul = lcdata.light_curve(source)
+    win = plot.xyplot(t, f, yerr=df, xname='MJD', yname='flux (ph/cm^2/s)',
+                      yrange=(0, 1.1*max(f)))
+    win.set_title('%s, 100 to 300000 MeV' % source)
+    plot.save('3C_454.3_100_300000.png')
 
-    t, f, df, ul = lcdata.light_curve('3C 454.3', eband='300_1000')
-    plot.xyplot(t, f, df, yrange=(0, 1.1*max(f))).set_title('300 to 1000')
+    t1, f1, df1, ul1 = lcdata.light_curve(source, eband='300_1000')
+    win1 = plot.xyplot(t1, f1, yerr=df1, xname='MJD', yname='flux (ph/cm^2/s)',
+                       yrange=(0, 1.1*max(f1)))
+    win1.set_title('%s, 300 to 1000 MeV' % source)
+    plot.save('3C_454.3_300_1000.png')
 
-    t, f, df, ul = lcdata.light_curve('3C 454.3', eband='1000_300000')
-    plot.xyplot(t, f, df, yrange=(0, 1.1*max(f))).set_title('1000 to 30000')
+    t2, f2, df2, ul2 = lcdata.light_curve(source, eband='1000_300000')
+    win2 = plot.xyplot(t2, f2, yerr=df2, xname='MJD', yname='flux (ph/cm^2/s)',
+                       yrange=(0, 1.1*max(f2)))
+    win2.set_title('%s, 1000 to 300000 MeV' % source)
+    plot.save('3C_454.3_100_300000.png')
 
     
