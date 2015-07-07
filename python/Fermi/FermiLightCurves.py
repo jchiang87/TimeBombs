@@ -55,6 +55,6 @@ if __name__ == '__main__':
     win2 = plot.xyplot(t2, f2, yerr=df2, xname='MJD', yname='flux (ph/cm^2/s)',
                        yrange=(0, 1.1*max(f2)))
     win2.set_title('%s, 1000 to 300000 MeV' % source)
-    plot.save('3C_454.3_100_300000.png')
+    plot.save('3C_454.3_1000_300000.png')
 
     
